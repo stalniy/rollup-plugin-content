@@ -24,7 +24,8 @@
     "npm": "^6.0.0"
   },
   "files": [
-    "dist"
+    "dist",
+    "*.d.ts"
   ],
   "peerDependencies": {
     "rollup": "^1.20.0 || ^2.0.0"
