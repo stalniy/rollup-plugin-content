@@ -49,7 +49,7 @@ type URLIndex = {
   }
 };
 
-type ContentOptions<Lang extends string = 'en', S extends Summarizer<any> = Summarizer<Article>> = {
+type ContentOptions<Lang extends string, S extends Summarizer<any>> = {
   matches?: RegExp,
   langs?: Lang[],
   summarizer?: S | false,
@@ -59,7 +59,9 @@ type ContentOptions<Lang extends string = 'en', S extends Summarizer<any> = Summ
   fs?: typeof localFs
 };
 
-export default (options: ContentOptions = {}): Plugin => {
+export default <L extends string = 'en', S extends Summarizer<any> = Summarizer<Article>>(
+  options: ContentOptions<L, S> = {}
+): Plugin => {
   const regex = options.matches || /\.summary$/;
   const KEY = `SUMMARY_${pluginId++}:`;
   const availableLangs = options.langs || ['en'];
