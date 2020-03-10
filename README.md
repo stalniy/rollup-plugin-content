@@ -148,6 +148,90 @@ In order to use this in typescript just include `rollup-plugin-content/content.d
 }
 ```
 
+## Can I use HTML inside?
+
+Yes, you can use either [gray-matter] or [xyaml-webpack-loader] to use HTML in yaml files.
+
+### Config for xyaml-webpack-loader
+
+Despite the name [xyaml-webpack-loader] supports rollup as well and can be used as a standalone parser:
+
+```js
+import { parse } from 'xyaml-webpack-loader/parser';
+import { content } from 'rollup-plugin-content';
+
+export default {
+  input: 'src/app.js',
+  output: {
+    // ...
+  },
+  plugins: [
+    // ...
+    content({
+      langs: ['en', 'uk'],
+      parse
+    }),
+  ]
+}
+```
+
+The nice thing about this package is that it allows you to use markdown in any field you need, not only in content section.
+
+### Config for gray-matter
+
+Pass `grayMatter` to `parse` option of rollup-plugin-content and use [gray-matter] to define your content:
+
+```js
+import matter from 'gray-matter';
+import { content } from 'rollup-plugin-content';
+
+export default {
+  input: 'src/app.js',
+  output: {
+    // ...
+  },
+  plugins: [
+    // ...
+    content({
+      langs: ['en', 'uk'],
+      parse: matter
+    }),
+  ]
+}
+```
+
+### Get the best of 2 packages
+
+[gray-matter] supports custom parsers and this allows to combine [xyaml-webpack-loader]'s parser with gray-matter:
+
+```js
+import parser from 'xyaml-webpack-loader/parser';
+import matter from 'gray-matter';
+import { content } from 'rollup-plugin-content';
+
+export default {
+  input: 'src/app.js',
+  output: {
+    // ...
+  },
+  plugins: [
+    // ...
+    content({
+      langs: ['en', 'uk'],
+      parse: content => matter(content, {
+        language: 'xyaml',
+        engines: {
+          xyaml: parser
+        }
+      })
+    }),
+  ]
+}
+```
+
+[gray-matter]: https://github.com/jonschlinkert/gray-matter
+[xyaml-webpack-loader]: https://github.com/stalniy/xyaml-webpack-loader
+
 ## License
 
 [MIT License](http://www.opensource.org/licenses/MIT)
