@@ -1,11 +1,10 @@
 import { Plugin, PluginContext } from 'rollup';
-import Ajv from 'ajv';
 import { extname, dirname, resolve as resolvePath } from 'path';
 import localFs, { FileDetails } from './fs';
 import {
   Summarizer, Summaries, Article, ArticleSummarizer,
 } from './Summarizer';
-import { defaultSchema } from './schema';
+import validator from './validator';
 
 const generateAssetUrl = (id: string) => `import.meta.ROLLUP_ASSET_URL_${id}`;
 
@@ -54,7 +53,7 @@ type ContentOptions<Lang extends string, S extends Summarizer<any>> = {
   langs?: Lang[],
   summarizer?: S | false,
   pageId?: GetPageId<Lang>,
-  pageSchema?: object,
+  pageSchema?: object | false,
   parse?: (content: string) => S extends Summarizer<infer U> ? U : never,
   fs?: typeof localFs
 };
@@ -71,8 +70,7 @@ export default <L extends string = 'en', S extends Summarizer<any> = Summarizer<
     : (options.summarizer || new ArticleSummarizer());
   const parse = options.parse || JSON.parse;
   const fs = options.fs || localFs;
-  const ajv = new Ajv();
-  const validatePage = ajv.compile(options.pageSchema || defaultSchema);
+  const validatePage = validator(options.pageSchema);
 
   return {
     name: 'content-summary',
@@ -106,11 +104,12 @@ export default <L extends string = 'en', S extends Summarizer<any> = Summarizer<
 
         const source = await fs.readFile(file.path, { encoding: 'utf8' });
         const page = parse(source);
+        const errors = validatePage(page);
 
-        if (!validatePage(page)) {
-          console.error(`Invalid article content in ${relativePath}`);
-          console.error(ajv.errorsText(validatePage.errors));
-          throw new Ajv.ValidationError(validatePage.errors!);
+        if (errors) {
+          console.error(`Invalid content in "${relativePath}"`);
+          console.error(errors);
+          throw new TypeError('Invalid file content');
         }
 
         const pageId = generatePageId(page, lang, { relativePath, file, ext });

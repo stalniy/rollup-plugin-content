@@ -22,11 +22,9 @@ export const defaultSchema = {
   properties: {
     title: {
       type: 'string',
-      minLength: 10,
     },
     author: {
       type: 'string',
-      enum: ['sstotskyi'],
     },
     createdAt: {
       format: 'date-time',
@@ -47,7 +45,6 @@ export const defaultSchema = {
       type: 'array',
       items: {
         type: 'string',
-        enum: ['backend', 'frontend', 'linux', 'important'],
       },
     },
     meta: {
