@@ -9,5 +9,7 @@ export default function validator(schema: object | undefined | false) {
   const ajv = new Ajv();
   const validate = ajv.compile(schema || defaultSchema);
 
-  return (page: unknown) => (validate(page) ? null : ajv.errorsText(validate.errors));
+  return (page: unknown) => (validate(page) ? null : ajv.errorsText(validate.errors, {
+    dataVar: 'page'
+  }));
 }

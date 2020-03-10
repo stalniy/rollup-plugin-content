@@ -64,6 +64,8 @@ export type Summarizer<T> = {
   toJSON(): Summaries<T>
 };
 
+export type SummarizerType<T> = new (...args: any[]) => Summarizer<T>;
+
 export class ArticleSummarizer {
   protected imageSize: Exclude<SummarizerOptions['imageSize'], undefined>;
 

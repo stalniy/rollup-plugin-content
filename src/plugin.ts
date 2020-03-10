@@ -2,7 +2,10 @@ import { Plugin, PluginContext } from 'rollup';
 import { extname, dirname, resolve as resolvePath } from 'path';
 import localFs, { FileDetails } from './fs';
 import {
-  Summarizer, Summaries, Article, ArticleSummarizer,
+  SummarizerType,
+  Summaries,
+  Article,
+  ArticleSummarizer,
 } from './Summarizer';
 import validator from './validator';
 
@@ -48,26 +51,26 @@ type URLIndex = {
   }
 };
 
-type ContentOptions<Lang extends string, S extends Summarizer<any>> = {
+type ContentOptions<Lang extends string, S extends SummarizerType<any>> = {
   matches?: RegExp,
   langs?: Lang[],
   summarizer?: S | false,
   pageId?: GetPageId<Lang>,
   pageSchema?: object | false,
-  parse?: (content: string) => S extends Summarizer<infer U> ? U : never,
+  parse?: (content: string) => S extends SummarizerType<infer U> ? U : never,
   fs?: typeof localFs
 };
 
-export default <L extends string = 'en', S extends Summarizer<any> = Summarizer<Article>>(
+export default <L extends string = 'en', S extends SummarizerType<any> = SummarizerType<Article>>(
   options: ContentOptions<L, S> = {},
 ): Plugin => {
   const regex = options.matches || /\.summary$/;
   const KEY = `SUMMARY_${pluginId++}:`;
   const availableLangs = options.langs || ['en'];
   const generatePageId = options.pageId || fileNameId;
-  const summarizer = options.summarizer === false
+  const Summarizer = options.summarizer === false
     ? null
-    : (options.summarizer || new ArticleSummarizer());
+    : (options.summarizer || ArticleSummarizer);
   const parse = options.parse || JSON.parse;
   const fs = options.fs || localFs;
   const validatePage = validator(options.pageSchema);
@@ -90,6 +93,7 @@ export default <L extends string = 'en', S extends Summarizer<any> = Summarizer<
 
       const path = id.slice(KEY.length);
       const urls: URLIndex = {};
+      const summarizer = Summarizer ? new Summarizer() : null;
 
       this.addWatchFile(path);
       await fs.walkPath(path, async (file) => {
