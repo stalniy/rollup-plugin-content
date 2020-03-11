@@ -106,6 +106,8 @@ export default <L extends string = 'en', S extends SummarizerType<any> = Summari
           throw new Error(`Invalid lang suffix "${lang}" in ${relativePath}. Possible value: ${availableLangs.join(', ')}`);
         }
 
+        this.addWatchFile(file.path);
+
         const source = await fs.readFile(file.path, { encoding: 'utf8' });
         const page = parse(source);
         const errors = validatePage(page);
