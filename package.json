@@ -1,6 +1,6 @@
 {
   "name": "rollup-plugin-content",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "Rollup plugin to generate content and its summaries for i18n static sites",
   "main": "dist/cjs/index.js",
   "module": "dist/es6/index.js",
