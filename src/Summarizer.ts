@@ -82,8 +82,6 @@ export type Summarizer<T extends object> = {
 export type SummarizerType<T extends object> = new (...args: any[]) => Summarizer<T>;
 
 const DEFAULT_SUMMARIZER_OPTIONS = {
-  indexBy: ['categories', 'meta.keywords'],
-  sortBy: ['createdAt'],
   fields: [
     'title',
     'author',
@@ -140,7 +138,7 @@ export class ItemSummarizer<T extends object> {
 
     const summary = this.summaries[lang];
     indexBy.forEach((field) => {
-      const indexName = field[0].toUpperCase() + field[1].slice(1)
+      const indexName = field[0].toUpperCase() + field.slice(1)
         .replace(/\.(\w)/g, (_, l) => l.toUpperCase());
       updateIndex(summary, `by${indexName}`, get(item, field), position);
     });

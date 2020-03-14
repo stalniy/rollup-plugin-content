@@ -13,7 +13,7 @@ const config = ({ format, file }) => ({
     '@sindresorhus/slugify',
     'lodash/get',
     'lodash/set',
-    'lodash/sortBy',
+    'lodash/orderBy',
   ],
   output: {
     format,

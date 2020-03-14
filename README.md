@@ -132,9 +132,9 @@ To see the list of propeties inside page summary items, check [schema file](./sr
   extracts information from pages in order to create a list of summaries. Can be disabled by specifying `false`. Also you can provide your own summarizer, it must implement `add` and `toJSON` methods, for their signatures [check this file](./src/Summarizer.ts#L62)
 * `summary`
   configures summarizer. Possible options:
-  * `indexBy`, by default `['categories', 'meta.keywords']`
+  * `indexBy`
     creates index of specified values to item position
-  * `sortBy`, by default `['createdAt']`
+  * `sortBy`
     sorts items by fields
   * `fields`, by default `['title', 'author', 'createdAt', 'alias', 'categories', 'summary']`
     extracted fields
