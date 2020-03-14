@@ -120,10 +120,10 @@ export default <L extends string = 'en', Item extends object = Article>(
           throw new TypeError('Invalid file content');
         }
 
-        const pageId = generatePageId(page, lang, { relativePath, file, ext });
+        page.id = generatePageId(page, lang, { relativePath, file, ext });
 
         urls[lang] = urls[lang] || {};
-        urls[lang][pageId] = this.emitFile({
+        urls[lang][page.id] = this.emitFile({
           type: 'asset',
           name: 'a.json',
           source: JSON.stringify(page),
