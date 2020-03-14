@@ -1,5 +1,4 @@
 export interface ArticleSummary {
-  i: number
   title: string
   author: string
   createdAt: Date

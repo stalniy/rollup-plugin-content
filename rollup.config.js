@@ -10,12 +10,15 @@ const config = ({ format, file }) => ({
     'fs',
     'util',
     'path',
-    '@sindresorhus/slugify'
+    '@sindresorhus/slugify',
+    'lodash/get',
+    'lodash/set',
+    'lodash/sortBy',
   ],
   output: {
     format,
     file,
-    sourcemap: true
+    sourcemap: true,
   },
   plugins: [
     resolve({
@@ -26,19 +29,19 @@ const config = ({ format, file }) => ({
       rootMode: 'upward',
       extensions: ['.js', '.mjs', '.ts'],
       caller: {
-        output: format
+        output: format,
       },
-    })
-  ]
-})
+    }),
+  ],
+});
 
 export default [
   config({
     format: 'es',
-    file: 'dist/es6/index.js'
+    file: 'dist/es6/index.js',
   }),
   config({
     format: 'cjs',
-    file: 'dist/cjs/index.js'
-  })
+    file: 'dist/cjs/index.js',
+  }),
 ];

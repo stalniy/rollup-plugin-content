@@ -3,9 +3,10 @@ import { extname, dirname, resolve as resolvePath } from 'path';
 import localFs, { FileDetails } from './fs';
 import {
   SummarizerType,
+  SummarizerOptions,
   Summaries,
   Article,
-  ArticleSummarizer,
+  ItemSummarizer,
 } from './Summarizer';
 import validator from './validator';
 
@@ -34,7 +35,7 @@ type GetPageIdOptions = {
   file: FileDetails,
   relativePath: string
 };
-type GetPageId<L> = (page: Article, lang: L, options: GetPageIdOptions) => string;
+type GetPageId<L> = (page: unknown, lang: L, options: GetPageIdOptions) => string;
 
 const fileNameId: GetPageId<string> = (page, lang, { relativePath, ext }) => {
   const index = lang.length + ext.length + 1;
@@ -51,18 +52,19 @@ type URLIndex = {
   }
 };
 
-type ContentOptions<Lang extends string, S extends SummarizerType<any>> = {
+type ContentOptions<Lang extends string, Item extends object> = {
   matches?: RegExp,
   langs?: Lang[],
-  summarizer?: S | false,
+  summarizer?: SummarizerType<Item> | false,
+  summary?: SummarizerOptions<Item>,
   pageId?: GetPageId<Lang>,
   pageSchema?: object | false,
-  parse?: (content: string) => S extends SummarizerType<infer U> ? U : never,
+  parse?: (content: string) => Item,
   fs?: typeof localFs
 };
 
-export default <L extends string = 'en', S extends SummarizerType<any> = SummarizerType<Article>>(
-  options: ContentOptions<L, S> = {},
+export default <L extends string = 'en', Item extends object = Article>(
+  options: ContentOptions<L, Item> = {},
 ): Plugin => {
   const regex = options.matches || /\.summary$/;
   const KEY = `SUMMARY_${pluginId++}:`;
@@ -70,7 +72,7 @@ export default <L extends string = 'en', S extends SummarizerType<any> = Summari
   const generatePageId = options.pageId || fileNameId;
   const Summarizer = options.summarizer === false
     ? null
-    : (options.summarizer || ArticleSummarizer);
+    : (options.summarizer || ItemSummarizer);
   const parse = options.parse || JSON.parse;
   const fs = options.fs || localFs;
   const validatePage = validator(options.pageSchema);
@@ -93,7 +95,7 @@ export default <L extends string = 'en', S extends SummarizerType<any> = Summari
 
       const path = id.slice(KEY.length);
       const urls: URLIndex = {};
-      const summarizer = Summarizer ? new Summarizer() : null;
+      const summarizer = Summarizer ? new Summarizer(options.summary) : null;
 
       this.addWatchFile(path);
       await fs.walkPath(path, async (file) => {

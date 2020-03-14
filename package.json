@@ -36,6 +36,7 @@
     "@babel/preset-typescript": "^7.8.3",
     "@rollup/plugin-commonjs": "^11.0.2",
     "@rollup/plugin-node-resolve": "^7.1.1",
+    "@types/lodash": "^4.14.149",
     "@types/node": "^13.9.0",
     "@typescript-eslint/eslint-plugin": "^2.22.0",
     "eslint": "^6.8.0",
@@ -56,11 +57,12 @@
   },
   "lint-staged": {
     "**/*.{js,ts}": [
-      "eslint --fix --ext .ts"
+      "eslint --fix --ext .ts,.js"
     ]
   },
   "dependencies": {
     "@sindresorhus/slugify": "^0.11.0",
-    "ajv": "^6.12.0"
+    "ajv": "^6.12.0",
+    "lodash": "^4.17.15"
   }
 }

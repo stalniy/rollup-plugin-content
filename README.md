@@ -130,6 +130,16 @@ To see the list of propeties inside page summary items, check [schema file](./sr
   JSON schema to validate the page. So, you are saved from making a typo and spending hours trying to understand what is wrong
 * `summarizer`, by default equals `new ArticleSummarizer()`
   extracts information from pages in order to create a list of summaries. Can be disabled by specifying `false`. Also you can provide your own summarizer, it must implement `add` and `toJSON` methods, for their signatures [check this file](./src/Summarizer.ts#L62)
+* `summary`
+  configures summarizer. Possible options:
+  * `indexBy`, by default `['categories', 'meta.keywords']`
+    creates index of specified values to item position
+  * `sortBy`, by default `['createdAt']`
+    sorts items by fields
+  * `fields`, by default `['title', 'author', 'createdAt', 'alias', 'categories', 'summary']`
+    extracted fields
+  * `resolve`, by default `{ alias: pageAlias }`
+    preprocess values
 * `parse`, by default equals `JSON.parse`
   parses file content into object, accepts single string parameter which is file content.
 * `fs`, by default uses nodejs filesystem
