@@ -27,16 +27,33 @@ function updateIndex(
   }
 }
 
-function collectFieldsAndOrder(fields: string[]) {
-  const sort: { fields: string[], order: ('asc' | 'desc')[] } = { fields: [], order: [] };
+type SortingOptions = {
+  fields: string[],
+  order: Array<'asc' | 'desc'>,
+  missingFields: string[]
+};
 
-  fields.forEach((field) => {
-    if (field[0] === '-') {
-      sort.fields.push(field.slice(1));
-      sort.order.push('desc');
-    } else {
-      sort.fields.push(field);
-      sort.order.push('asc');
+function getSortingOptions(options: any) {
+  const sort: SortingOptions = {
+    fields: [],
+    order: [],
+    missingFields: [],
+  };
+
+  options.sortBy.forEach((item: string) => {
+    let field = item;
+    let order: SortingOptions['order'][number] = 'asc';
+
+    if (item[0] === '-') {
+      field = item.slice(1);
+      order = 'desc';
+    }
+
+    sort.fields.push(field);
+    sort.order.push(order);
+
+    if (!options.fields.includes(field)) {
+      sort.missingFields.push(field);
     }
   });
 
@@ -88,7 +105,6 @@ const DEFAULT_SUMMARIZER_OPTIONS = {
     'createdAt',
     'alias',
     'categories',
-    'summary',
   ],
   resolve: {
     alias: pageAlias,
@@ -100,16 +116,23 @@ export class ItemSummarizer<T extends object> {
 
   protected summaries: Summaries<object>;
 
+  protected sortingOptions: SortingOptions | null;
+
   constructor(options: Partial<SummarizerOptions<T>> = {}) {
     this.options = {
       ...DEFAULT_SUMMARIZER_OPTIONS,
       ...options,
     } as SummarizerOptions<T>;
     this.summaries = {};
+    this.sortingOptions = options.sortBy
+      ? getSortingOptions(this.options)
+      : null;
   }
 
   add(item: T, lang: string, options: ItemOptions) {
-    if ((item as any).draft) {
+    const object = item as any;
+
+    if (object.draft || object.hidden) {
       return;
     }
 
@@ -126,7 +149,23 @@ export class ItemSummarizer<T extends object> {
 
       return partialItem;
     }, {});
+
     this.summaries[lang].items.push(summarizedItem);
+    this.ensureHasFieldsForSorting(summarizedItem, item);
+  }
+
+  protected ensureHasFieldsForSorting(summarizedItem: unknown, item: T) {
+    const { sortingOptions } = this;
+
+    if (!sortingOptions || !sortingOptions.missingFields.length) {
+      return;
+    }
+
+    sortingOptions.missingFields.forEach((field) => {
+      const index = field.indexOf('.');
+      const key = index === -1 ? field : field.slice(0, index);
+      Object.defineProperty(summarizedItem, key, { value: get(item, field) });
+    });
   }
 
   protected addToIndex(item: object, lang: string, position: number) {
@@ -145,15 +184,13 @@ export class ItemSummarizer<T extends object> {
   }
 
   toJSON() {
-    const sortOrder = this.options.sortBy
-      ? collectFieldsAndOrder(this.options.sortBy)
-      : null;
     Object.keys(this.summaries).forEach((lang) => {
       const summary = this.summaries[lang];
 
-      if (sortOrder) {
+      if (this.sortingOptions) {
+        const { fields, order } = this.sortingOptions;
         // eslint-disable-next-line no-param-reassign
-        summary.items = orderBy(summary.items, sortOrder.fields, sortOrder.order);
+        summary.items = orderBy(summary.items, fields, order);
       }
 
       if (this.options.indexBy) {
