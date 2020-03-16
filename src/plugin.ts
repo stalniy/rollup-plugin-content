@@ -1,6 +1,7 @@
 import { Plugin, PluginContext } from 'rollup';
 import { extname, dirname, resolve as resolvePath } from 'path';
-import localFs, { FileDetails } from './fs';
+import localFs from './fs';
+import { ParsingContext } from './types';
 import {
   SummarizerType,
   SummarizerOptions,
@@ -30,14 +31,9 @@ function serializeSummary(rollup: PluginContext, name: string, summaries: Summar
   })));
 }
 
-type GetPageIdOptions = {
-  ext: string,
-  file: FileDetails,
-  relativePath: string
-};
-type GetPageId<L> = (page: unknown, lang: L, options: GetPageIdOptions) => string;
+type GetPageId<L extends string> = (page: unknown, options: ParsingContext<L>) => string;
 
-const fileNameId: GetPageId<string> = (page, lang, { relativePath, ext }) => {
+const fileNameId: GetPageId<string> = (_, { lang, relativePath, ext }) => {
   const index = lang.length + ext.length + 1;
   const id = relativePath.slice(0, -index);
 
@@ -59,7 +55,7 @@ type ContentOptions<Lang extends string, Item extends object> = {
   summary?: SummarizerOptions<Item>,
   pageId?: GetPageId<Lang>,
   pageSchema?: object | false,
-  parse?: (content: string) => Item,
+  parse?: (content: string, context?: ParsingContext<Lang>) => Item,
   fs?: typeof localFs
 };
 
@@ -73,7 +69,7 @@ export default <L extends string = 'en', Item extends object = Article>(
   const Summarizer = options.summarizer === false
     ? null
     : (options.summarizer || ItemSummarizer);
-  const parse = options.parse || JSON.parse;
+  const parse = options.parse || ((content) => JSON.parse(content));
   const fs = options.fs || localFs;
   const validatePage = validator(options.pageSchema);
 
@@ -111,7 +107,10 @@ export default <L extends string = 'en', Item extends object = Article>(
         this.addWatchFile(file.path);
 
         const source = await fs.readFile(file.path, { encoding: 'utf8' });
-        const page = parse(source);
+        const parsingContext = {
+          relativePath, lang, file, ext,
+        };
+        const page = parse(source, parsingContext);
         const errors = validatePage(page);
 
         if (errors) {
@@ -120,7 +119,7 @@ export default <L extends string = 'en', Item extends object = Article>(
           throw new TypeError('Invalid file content');
         }
 
-        page.id = generatePageId(page, lang, { relativePath, file, ext });
+        page.id = generatePageId(page, parsingContext);
 
         urls[lang] = urls[lang] || {};
         urls[lang][page.id] = this.emitFile({
@@ -130,7 +129,7 @@ export default <L extends string = 'en', Item extends object = Article>(
         });
 
         if (summarizer) {
-          summarizer.add(page, lang, { relativePath });
+          summarizer.add(page, parsingContext);
         }
       });
 

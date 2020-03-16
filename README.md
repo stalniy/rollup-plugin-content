@@ -140,8 +140,8 @@ To see the list of propeties inside page summary items, check [schema file](./sr
     extracted fields
   * `resolve`, by default `{ alias: pageAlias }`
     preprocess values
-* `parse`, by default equals `JSON.parse`
-  parses file content into object, accepts single string parameter which is file content.
+* `parse`, by default equals `content => JSON.parse(content)`
+  parses file content into object, accepts file content and parsing context.
 * `fs`, by default uses nodejs filesystem
   may be useful if you want to implement in memmory filesystem. Must implement 2 methods: `walkPath` and `readFile`.
 

@@ -3,6 +3,7 @@ import get from 'lodash/get';
 import set from 'lodash/set';
 import orderBy from 'lodash/orderBy';
 import { ArticleSummary } from './schema';
+import { ParsingContext } from './types';
 
 type Primitive = boolean | string | number | null | undefined;
 
@@ -66,18 +67,18 @@ export type Summaries<T extends object> = {
   [lang: string]: Summary<T>
 };
 
-type ResolverOptions<T extends object> = ItemOptions & SummarizerOptions<T>;
-
 export type SummarizerOptions<T extends object> = {
   fields: Array<keyof T>,
   resolve: {
-    [K in keyof T]?: (value: T, field: K, options?: ResolverOptions<T>) => T[K]
+    [K in keyof T]?: (
+      value: T,
+      field: K,
+      parsingContext?: ParsingContext<string>,
+      options?: SummarizerOptions<T>
+    ) => T[K]
   },
   sortBy: string[],
   indexBy: Array<keyof T>,
-};
-type ItemOptions = {
-  relativePath: string
 };
 
 export type Article = ArticleSummary & {
@@ -91,8 +92,10 @@ export type Article = ArticleSummary & {
 type Page = { alias?: string, title: string };
 export const pageAlias = (page: Page) => page.alias || slugify(page.title);
 
-export type Summarizer<T extends object> = {
-  add(article: T, lang: string, options: ItemOptions): void
+type BaseItem = { hidden?: true };
+
+export type Summarizer<T extends BaseItem> = {
+  add(article: T, options: ParsingContext<string>): void
   toJSON(): Summaries<T>
 };
 
@@ -111,7 +114,7 @@ const DEFAULT_SUMMARIZER_OPTIONS = {
   },
 } as const;
 
-export class ItemSummarizer<T extends object> {
+export class ItemSummarizer<T extends BaseItem> {
   protected options: SummarizerOptions<T>;
 
   protected summaries: Summaries<object>;
@@ -129,18 +132,17 @@ export class ItemSummarizer<T extends object> {
       : null;
   }
 
-  add(item: T, lang: string, options: ItemOptions) {
-    const object = item as any;
-
-    if (object.draft || object.hidden) {
+  add(item: T, options: ParsingContext<string>) {
+    if (item.hidden) {
       return;
     }
 
+    const { lang } = options;
     this.summaries[lang] = this.summaries[lang] || { items: [] };
     const summarizedItem = this.options.fields.reduce((partialItem, field) => {
       const resolve = this.options.resolve[field];
       const value = typeof resolve === 'function'
-        ? resolve(item, field, { ...this.options, ...options })
+        ? resolve(item, field, options, this.options)
         : get(item, field);
 
       if (typeof value !== 'undefined') {
