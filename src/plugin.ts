@@ -1,4 +1,5 @@
 import { Plugin, PluginContext } from 'rollup';
+import { createFilter } from '@rollup/pluginutils';
 import { extname, dirname, resolve as resolvePath } from 'path';
 import localFs from './fs';
 import { ParsingContext } from './types';
@@ -40,6 +41,7 @@ const fileNameId: GetPageId<string> = (_, { lang, relativePath, ext }) => {
   return id || 'default';
 };
 
+const returnTrue = () => true;
 let pluginId = 1;
 
 type URLIndex = {
@@ -49,7 +51,8 @@ type URLIndex = {
 };
 
 type ContentOptions<Lang extends string, Item extends object> = {
-  matches?: RegExp,
+  entry?: RegExp,
+  files?: string,
   langs?: Lang[],
   summarizer?: SummarizerType<Item> | false,
   summary?: SummarizerOptions<Item>,
@@ -62,7 +65,7 @@ type ContentOptions<Lang extends string, Item extends object> = {
 export default <L extends string = 'en', Item extends object = Article>(
   options: ContentOptions<L, Item> = {},
 ): Plugin => {
-  const regex = options.matches || /\.summary$/;
+  const entryRegex = options.entry || /\.summary$/;
   const KEY = `SUMMARY_${pluginId++}:`;
   const availableLangs = options.langs || ['en'];
   const generatePageId = options.pageId || fileNameId;
@@ -72,11 +75,12 @@ export default <L extends string = 'en', Item extends object = Article>(
   const parse = options.parse || ((content) => JSON.parse(content));
   const fs = options.fs || localFs;
   const validatePage = validator(options.pageSchema);
+  const canProcessFile = options.files ? createFilter(options.files) : returnTrue;
 
   return {
     name: 'content-summary',
     resolveId(id, importee) {
-      if (regex.test(id)) {
+      if (entryRegex.test(id)) {
         const ext = extname(id);
         return KEY + resolvePath(dirname(importee!), id.slice(0, -ext.length));
       }
@@ -95,6 +99,10 @@ export default <L extends string = 'en', Item extends object = Article>(
 
       this.addWatchFile(path);
       await fs.walkPath(path, async (file) => {
+        if (!canProcessFile(file.path)) {
+          return;
+        }
+
         const relativePath = file.path.slice(path.length + 1);
         const ext = extname(file.name);
         const langIndex = file.name.slice(0, -ext.length).lastIndexOf('.') + 1;
@@ -134,11 +142,11 @@ export default <L extends string = 'en', Item extends object = Article>(
       });
 
       const pagesContent = serializeRefs(urls, (langUrls) => serializeRefs(langUrls));
-      let content = `export const pages = ${pagesContent};\n`;
+      let content = `export var pages = ${pagesContent};\n`;
 
       if (summarizer) {
         const name = path.slice(path.indexOf('/src/') + 5).replace(/\W+/g, '_');
-        content += `export const summaries = ${serializeSummary(this, name, summarizer.toJSON())};`;
+        content += `export var summaries = ${serializeSummary(this, name, summarizer.toJSON())};`;
       }
 
       return content;
