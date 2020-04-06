@@ -11,6 +11,7 @@ const config = ({ format, file }) => ({
     'util',
     'path',
     '@sindresorhus/slugify',
+    'lodash',
     'lodash/get',
     'lodash/set',
     'lodash/orderBy',

@@ -62,7 +62,7 @@ function getSortingOptions(options: any) {
 }
 
 type IndexByPosition = { [key: string]: number[] };
-export type Summary<T extends object> = { items: T[] } & { [indexName: string]: IndexByPosition };
+export type Summary<T extends object> = { items?: T[] } & { [indexName: string]: IndexByPosition };
 export type Summaries<T extends object> = {
   [lang: string]: Summary<T>
 };
@@ -95,6 +95,7 @@ export const pageAlias = (page: Page) => page.alias || slugify(page.title);
 type BaseItem = { hidden?: true };
 
 export type Summarizer<T extends BaseItem> = {
+  exportAs?: string
   add(article: T, options: ParsingContext<string>): void
   toJSON(): Summaries<T>
 };
@@ -152,7 +153,7 @@ export class ItemSummarizer<T extends BaseItem> {
       return partialItem;
     }, {});
 
-    this.summaries[lang].items.push(summarizedItem);
+    this.summaries[lang].items!.push(summarizedItem);
     this.ensureHasFieldsForSorting(summarizedItem, item);
   }
 
@@ -196,7 +197,7 @@ export class ItemSummarizer<T extends BaseItem> {
       }
 
       if (this.options.indexBy) {
-        summary.items.forEach((item, position) => this.addToIndex(item, lang, position));
+        summary.items!.forEach((item, position) => this.addToIndex(item, lang, position));
       }
     });
 

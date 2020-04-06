@@ -55,7 +55,12 @@ export default {
   plugins: [
     content({
       langs: ['en', 'uk'],
-      parse: yaml.load // by default uses `JSON.parse`
+      parse: yaml.load, // by default uses `JSON.parse`
+      plugins: [
+        summary({
+          fields: ['title', 'createdAt']
+        })
+      ]
     }),
     // other plugins
   ]
@@ -128,24 +133,16 @@ To see the list of propeties inside page summary items, check [schema file](./sr
   function which takes page object, lang and contextual parameters and generates page id which is them used inside `pages` to map this id to page url.
 * `pageSchema`, by default can be found [here](./src/schema.ts#L12)
   JSON schema to validate the page. So, you are saved from making a typo and spending hours trying to understand what is wrong
-* `summarizer`, by default equals `new ArticleSummarizer()`
-  extracts information from pages in order to create a list of summaries. Can be disabled by specifying `false`. Also you can provide your own summarizer, it must implement `add` and `toJSON` methods, for their signatures [check this file](./src/Summarizer.ts#L62)
-* `summary`
-  configures summarizer. Possible options:
-  * `indexBy`
-    creates index of specified values to item position
-  * `sortBy`
-    sorts items by fields
-  * `fields`, by default `['title', 'author', 'createdAt', 'alias', 'categories', 'summary']`
-    extracted fields
-  * `resolve`, by default `{ alias: pageAlias }`
-    preprocess values
 * `parse`, by default equals `content => JSON.parse(content)`
   parses file content into object, accepts file content and parsing context.
 * `fs`, by default uses nodejs filesystem
   may be useful if you want to implement in memmory filesystem. Must implement 2 methods: `walkPath` and `readFile`.
+* `plugins`\
+  allows to pass content plugins. Every plugin has the next hooks:
 
-## How to use this in typescript
+  * `beforeParse(source: string, parsingContext: ParsingContext): void`,
+  * `afterParse(item: object, parsingContext: ParsingContext): void`
+  * `generate(rollup: PluginContext, context: GenerationContext): string | Promise<string>`
 
 In order to use this in typescript just include `rollup-plugin-content/content.d.ts` in your `tsconfig.json`
 
@@ -157,6 +154,12 @@ In order to use this in typescript just include `rollup-plugin-content/content.d
   ]
 }
 ```
+
+## Built-in plugins
+
+This package contains `summary` content plugin that allows to create a separate json of short summary info for all items. This is useful if you need to list all your pages in chronological order (e.g., in blog).
+
+Summary plugin accepts either a configuration for summary or summarizer factory. It can be used to create search index json file using JavaScript full text search libraries like [MiniSearch](https://github.com/lucaong/minisearch).
 
 ## Can I use HTML inside?
 

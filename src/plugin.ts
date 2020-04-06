@@ -1,47 +1,12 @@
-import { Plugin, PluginContext } from 'rollup';
+import { Plugin } from 'rollup';
 import { createFilter } from '@rollup/pluginutils';
 import { extname, dirname, resolve as resolvePath } from 'path';
 import localFs from './fs';
-import { ParsingContext } from './types';
-import {
-  SummarizerType,
-  SummarizerOptions,
-  Summaries,
-  Article,
-  ItemSummarizer,
-} from './Summarizer';
+import { ParsingContext, GetPageId } from './types';
 import validator from './validator';
+import { ContentPlugin, runPluginsHook } from './contentPlugins';
+import { serializeRefs, returnTrue, fileNameId } from './utils';
 
-const generateAssetUrl = (id: string) => `import.meta.ROLLUP_ASSET_URL_${id}`;
-
-type GenerateRef = (ref: any, lang?: string) => string;
-
-function serializeRefs(refs: Record<string, any>, generate: GenerateRef = generateAssetUrl) {
-  const content = Object.keys(refs)
-    .map((key) => `"${key}": ${generate(refs[key], key)}`)
-    .join(',\n');
-
-  return `{${content}}`;
-}
-
-function serializeSummary(rollup: PluginContext, name: string, summaries: Summaries<any>) {
-  return serializeRefs(summaries, (summary, lang) => generateAssetUrl(rollup.emitFile({
-    type: 'asset',
-    name: `${name}.${lang}.json`,
-    source: JSON.stringify(summary),
-  })));
-}
-
-type GetPageId<L extends string> = (page: unknown, options: ParsingContext<L>) => string;
-
-const fileNameId: GetPageId<string> = (_, { lang, relativePath, ext }) => {
-  const index = lang.length + ext.length + 1;
-  const id = relativePath.slice(0, -index);
-
-  return id || 'default';
-};
-
-const returnTrue = () => true;
 let pluginId = 1;
 
 type URLIndex = {
@@ -50,35 +15,31 @@ type URLIndex = {
   }
 };
 
-type ContentOptions<Lang extends string, Item extends object> = {
-  entry?: RegExp,
-  files?: string,
-  langs?: Lang[],
-  summarizer?: SummarizerType<Item> | false,
-  summary?: SummarizerOptions<Item>,
-  pageId?: GetPageId<Lang>,
-  pageSchema?: object | false,
-  parse?: (content: string, context?: ParsingContext<Lang>) => Item,
+interface ContentOptions<Lang extends string, Item extends object> {
+  entry?: RegExp
+  files?: string
+  langs?: Lang[]
+  pageId?: GetPageId<Lang>
+  pageSchema?: object | false
+  parse?: (content: string, context?: ParsingContext<Lang>) => Item
   fs?: typeof localFs
-};
+  plugins?: ContentPlugin<Lang>[]
+}
 
-export default <L extends string = 'en', Item extends object = Article>(
+export default <L extends string = 'en', Item extends object = any>(
   options: ContentOptions<L, Item> = {},
 ): Plugin => {
   const entryRegex = options.entry || /\.summary$/;
-  const KEY = `SUMMARY_${pluginId++}:`;
+  const KEY = `CONTENT_${pluginId++}:`;
   const availableLangs = options.langs || ['en'];
   const generatePageId = options.pageId || fileNameId;
-  const Summarizer = options.summarizer === false
-    ? null
-    : (options.summarizer || ItemSummarizer);
   const parse = options.parse || ((content) => JSON.parse(content));
   const fs = options.fs || localFs;
   const validatePage = validator(options.pageSchema);
   const canProcessFile = options.files ? createFilter(options.files) : returnTrue;
 
   return {
-    name: 'content-summary',
+    name: 'content',
     resolveId(id, importee) {
       if (entryRegex.test(id)) {
         const ext = extname(id);
@@ -95,7 +56,6 @@ export default <L extends string = 'en', Item extends object = Article>(
 
       const path = id.slice(KEY.length);
       const urls: URLIndex = {};
-      const summarizer = Summarizer ? new Summarizer(options.summary) : null;
 
       this.addWatchFile(path);
       await fs.walkPath(path, async (file) => {
@@ -118,6 +78,8 @@ export default <L extends string = 'en', Item extends object = Article>(
         const parsingContext = {
           relativePath, lang, file, ext,
         };
+
+        await runPluginsHook(options.plugins, 'beforeParse', source, parsingContext);
         const page = parse(source, parsingContext);
         const errors = validatePage(page);
 
@@ -128,28 +90,20 @@ export default <L extends string = 'en', Item extends object = Article>(
         }
 
         page.id = generatePageId(page, parsingContext);
-
+        await runPluginsHook(options.plugins, 'afterParse', page, parsingContext);
         urls[lang] = urls[lang] || {};
         urls[lang][page.id] = this.emitFile({
           type: 'asset',
           name: 'a.json',
           source: JSON.stringify(page),
         });
-
-        if (summarizer) {
-          summarizer.add(page, parsingContext);
-        }
       });
 
       const pagesContent = serializeRefs(urls, (langUrls) => serializeRefs(langUrls));
-      let content = `export var pages = ${pagesContent};\n`;
+      const content = `export var pages = ${pagesContent};\n`;
+      const pluginsContent = await runPluginsHook(options.plugins, 'generate', this, { path });
 
-      if (summarizer) {
-        const name = path.slice(path.indexOf('/src/') + 5).replace(/\W+/g, '_');
-        content += `export var summaries = ${serializeSummary(this, name, summarizer.toJSON())};`;
-      }
-
-      return content;
+      return content + pluginsContent.filter(Boolean).join(';\n');
     },
   };
 };

@@ -12,6 +12,7 @@ module.exports = {
   rules: {
     'consistent-return': 'off',
     'no-restricted-syntax': 'off',
-    'no-plusplus': 'off'
+    'no-plusplus': 'off',
+    'import/prefer-default-export': 'off'
   }
 };
