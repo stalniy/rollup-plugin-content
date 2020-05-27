@@ -1,6 +1,6 @@
 import { GetPageId } from './types';
 
-export const generateAssetUrl = (id: string) => `import.meta.ROLLUP_ASSET_URL_${id}`;
+export const generateAssetUrl = (id: string) => `import.meta.ROLLUP_FILE_URL_${id}`;
 
 type GenerateRef = (ref: any, lang?: string) => string;
 
