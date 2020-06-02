@@ -245,6 +245,10 @@ export default {
 [gray-matter]: https://github.com/jonschlinkert/gray-matter
 [xyaml-webpack-loader]: https://github.com/stalniy/xyaml-webpack-loader
 
+## Example
+
+This plugin is used for generation of [CASL](https://stalniy.github.io/casl/) documentation. You can check how it's used to create pages and search index for client side full text search in [rollup.config.js](https://github.com/stalniy/casl/blob/master/docs-src/rollup.config.js#L144)
+
 ## License
 
 [MIT License](http://www.opensource.org/licenses/MIT)
