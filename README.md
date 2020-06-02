@@ -247,7 +247,7 @@ export default {
 
 ## Example
 
-This plugin is used for generation of [CASL](https://stalniy.github.io/casl/) documentation. You can check how it's used to create pages and search index for client side full text search in [rollup.config.js](https://github.com/stalniy/casl/blob/master/docs-src/rollup.config.js#L144)
+This plugin is used to generate [CASL documentation](https://stalniy.github.io/casl/). You can check how it's used to create pages and search index for client side full text search in [rollup.config.js](https://github.com/stalniy/casl/blob/master/docs-src/rollup.config.js#L144).
 
 ## License
 
