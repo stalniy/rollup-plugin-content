@@ -129,8 +129,8 @@ To see the list of propeties inside page summary items, check [schema file](./sr
   regexp that matches which imports to process
 * `langs`, by default equals `['en']`
   validates which languages should be included. Lang should be a part of file (e.g., `en.json`, `about.en.yml`)
-* `pageId`, by default generates page id from file name
-  function which takes page object, lang and contextual parameters and generates page id which is them used inside `pages` to map this id to page url.
+* `main`, contains `SummaryOptions` for the main entry file.
+  Sometimes it may be useful to restrict content of the main file and this field allows us to do this.
 * `pageSchema`, by default can be found [here](./src/schema.ts#L12)
   JSON schema to validate the page. So, you are saved from making a typo and spending hours trying to understand what is wrong
 * `parse`, by default equals `content => JSON.parse(content)`

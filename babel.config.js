@@ -3,6 +3,9 @@ const CONFIG = {
     presets: [
       '@babel/preset-typescript',
     ],
+    plugins: [
+      '@babel/plugin-proposal-optional-chaining',
+    ],
   },
   cjs: {
     presets: [
@@ -10,9 +13,9 @@ const CONFIG = {
         loose: true,
         useBuiltIns: false,
         targets: {
-          node: 10
+          node: 10,
         },
-      }]
+      }],
     ],
   },
 };
@@ -32,7 +35,9 @@ function config(name) {
 
 module.exports = (api) => {
   let format;
-  api.caller(caller => format = caller.output || process.env.NODE_ENV);
+  api.caller((caller) => {
+    format = caller.output || process.env.NODE_ENV;
+  });
   api.cache.using(() => format);
 
   return config(format);

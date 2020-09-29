@@ -2,10 +2,12 @@ import { Plugin } from 'rollup';
 import { createFilter } from '@rollup/pluginutils';
 import { extname, dirname, resolve as resolvePath } from 'path';
 import localFs from './fs';
-import { ParsingContext, GetPageId } from './types';
+import { ParsingContext, SummarizerOptions } from './types';
 import validator from './validator';
 import { ContentPlugin, runPluginsHook } from './contentPlugins';
-import { serializeRefs, returnTrue, fileNameId } from './utils';
+import {
+  serializeRefs, returnTrue, fileNameId, pick,
+} from './utils';
 
 let pluginId = 1;
 
@@ -15,24 +17,24 @@ type URLIndex = {
   }
 };
 
-interface ContentOptions<Lang extends string, Item extends object> {
+interface ContentOptions<Lang extends string, Item extends {}> {
   entry?: RegExp
   files?: string
   langs?: Lang[]
-  pageId?: GetPageId<Lang>
   pageSchema?: object | false
+  main?: SummarizerOptions<Item>,
   parse?: (content: string, context?: ParsingContext<Lang>) => Item
   fs?: typeof localFs
   plugins?: ContentPlugin<Lang>[]
 }
 
-export default <L extends string = 'en', Item extends object = any>(
+export default <L extends string = 'en', Item extends { id: any } = any>(
   options: ContentOptions<L, Item> = {},
 ): Plugin => {
   const entryRegex = options.entry || /\.summary$/;
   const KEY = `CONTENT_${pluginId++}:`;
   const availableLangs = options.langs || ['en'];
-  const generatePageId = options.pageId || fileNameId;
+  const generatePageId = options.main?.resolve?.id || fileNameId;
   const parse = options.parse || ((content) => JSON.parse(content));
   const fs = options.fs || localFs;
   const validatePage = validator(options.pageSchema);
@@ -89,13 +91,13 @@ export default <L extends string = 'en', Item extends object = any>(
           throw new TypeError('Invalid file content');
         }
 
-        page.id = generatePageId(page, parsingContext);
+        page.id = generatePageId(page, 'id', parsingContext);
         await runPluginsHook(options.plugins, 'afterParse', page, parsingContext);
         urls[lang] = urls[lang] || {};
         urls[lang][page.id] = this.emitFile({
           type: 'asset',
           name: 'a.json',
-          source: JSON.stringify(page),
+          source: JSON.stringify(options.main ? pick(page, options.main, parsingContext) : page),
         });
       });
 

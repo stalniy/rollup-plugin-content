@@ -1,12 +1,12 @@
 import { PluginContext } from 'rollup';
 import {
   Summarizer,
-  SummarizerOptions,
   Summaries,
   ItemSummarizer,
 } from '../Summarizer';
 import { ContentPlugin } from '../contentPlugins';
 import { serializeRefs, generateAssetUrl } from '../utils';
+import { SummarizerOptions } from '../types';
 
 function serializeSummary(rollup: PluginContext, name: string, summaries: Summaries<any>) {
   return serializeRefs(summaries, (details, lang) => generateAssetUrl(rollup.emitFile({
@@ -23,7 +23,7 @@ export function summary<Item extends object>(
 ): ContentPlugin {
   const createSummarizer = typeof summarizerOrOptions === 'function'
     ? summarizerOrOptions
-    : () => new ItemSummarizer<Item>(summarizerOrOptions);
+    : () => new ItemSummarizer<Item>(summarizerOrOptions) as unknown as Summarizer<Item>;
   let summarizer: Summarizer<Item> | null;
 
   return {

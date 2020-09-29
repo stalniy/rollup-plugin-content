@@ -7,4 +7,16 @@ export type ParsingContext<L extends string> = {
   file: FileDetails
 };
 
-export type GetPageId<L extends string> = (page: unknown, options: ParsingContext<L>) => string;
+export type SummarizerOptions<T extends object> = {
+  fields: Array<keyof T>,
+  resolve: {
+    [K in keyof T]?: (
+      value: T,
+      field: K,
+      parsingContext: ParsingContext<string>,
+      options?: SummarizerOptions<T>
+    ) => T[K]
+  },
+  sortBy: string[],
+  indexBy: Array<keyof T>,
+};

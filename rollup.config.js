@@ -6,15 +6,13 @@ const config = ({ format, file }) => ({
   input: 'src/index.ts',
   external: [
     'rollup',
+    '@rollup/pluginutils',
     'ajv',
     'fs',
     'util',
     'path',
     '@sindresorhus/slugify',
     'lodash',
-    'lodash/get',
-    'lodash/set',
-    'lodash/orderBy',
   ],
   output: {
     format,

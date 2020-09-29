@@ -1,5 +1,9 @@
 {
-  "include": ["src/*", "rollup.config.js"],
+  "include": [
+    "src/*",
+    "rollup.config.js",
+    "babel.config.js"
+  ],
   "compilerOptions": {
     "outDir": "dist/types",
     "target": "esnext",

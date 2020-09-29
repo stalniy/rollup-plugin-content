@@ -1,9 +1,8 @@
 import slugify from '@sindresorhus/slugify';
-import get from 'lodash/get';
-import set from 'lodash/set';
-import orderBy from 'lodash/orderBy';
+import { get, orderBy } from 'lodash';
 import { ArticleSummary } from './schema';
-import { ParsingContext } from './types';
+import { ParsingContext, SummarizerOptions } from './types';
+import { pick } from './utils';
 
 type Primitive = boolean | string | number | null | undefined;
 
@@ -66,21 +65,6 @@ export type Summary<T extends object> = { items?: T[] } & { [indexName: string]:
 export type Summaries<T extends object> = {
   [lang: string]: Summary<T>
 };
-
-export type SummarizerOptions<T extends object> = {
-  fields: Array<keyof T>,
-  resolve: {
-    [K in keyof T]?: (
-      value: T,
-      field: K,
-      parsingContext?: ParsingContext<string>,
-      options?: SummarizerOptions<T>
-    ) => T[K]
-  },
-  sortBy: string[],
-  indexBy: Array<keyof T>,
-};
-
 export type Article = ArticleSummary & {
   meta?: {
     keywords?: string[],
@@ -140,19 +124,8 @@ export class ItemSummarizer<T extends BaseItem> {
 
     const { lang } = options;
     this.summaries[lang] = this.summaries[lang] || { items: [] };
-    const summarizedItem = this.options.fields.reduce((partialItem, field) => {
-      const resolve = this.options.resolve[field];
-      const value = typeof resolve === 'function'
-        ? resolve(item, field, options, this.options)
-        : get(item, field);
 
-      if (typeof value !== 'undefined') {
-        set(partialItem, field, value);
-      }
-
-      return partialItem;
-    }, {});
-
+    const summarizedItem = pick(item, this.options, options);
     this.summaries[lang].items!.push(summarizedItem);
     this.ensureHasFieldsForSorting(summarizedItem, item);
   }
