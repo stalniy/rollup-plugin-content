@@ -93,11 +93,13 @@ export default <L extends string = 'en', Item extends { id: any } = any>(
 
         page.id = generatePageId(page, 'id', parsingContext);
         await runPluginsHook(options.plugins, 'afterParse', page, parsingContext);
+
+        const partialPage = options.main?.fields ? pick(page, options.main, parsingContext) : page;
         urls[lang] = urls[lang] || {};
         urls[lang][page.id] = this.emitFile({
           type: 'asset',
           name: 'a.json',
-          source: JSON.stringify(options.main ? pick(page, options.main, parsingContext) : page),
+          source: JSON.stringify(partialPage),
         });
       });
 
