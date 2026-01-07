@@ -1,17 +1,13 @@
-import fs from 'fs';
-import { promisify } from 'util';
-
-const readFile = promisify(fs.readFile);
-const readdir = promisify(fs.readdir);
+import fs from 'node:fs/promises';
 
 export type FileDetails = {
   path: string,
   name: string
 };
-type Callback = (file: FileDetails) => void;
+type Callback = (file: FileDetails) => void | Promise<void>;
 
 async function walkPath(path: string, callback: Callback) {
-  const files = await readdir(path, { encoding: 'utf8', withFileTypes: true });
+  const files = await fs.readdir(path, { encoding: 'utf8', withFileTypes: true });
   const promises = files.map(async (file) => {
     if (file.isDirectory()) {
       await walkPath(`${path}/${file.name}`, callback);
@@ -28,5 +24,5 @@ async function walkPath(path: string, callback: Callback) {
 
 export default {
   walkPath,
-  readFile,
+  readFile: fs.readFile,
 };

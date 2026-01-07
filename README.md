@@ -1,6 +1,6 @@
-# Static content generation using Rollup
+# Static content generation using Rollup/Vite
 
-This plugin allows to generate i18n summary and pages from yaml or json files to fetch them later in your app. This allows to create SPA blog using rollup and framework of your choise very easily.
+This plugin allows to generate i18n summary and pages from yaml or json files to fetch them later in your app. This allows to create SPA blog using rollup and framework of your choice very easily.
 
 ## Installation
 
@@ -66,6 +66,8 @@ export default {
   ]
 }
 ```
+
+The same applies to [vite](https://vite.dev/) configuration, see [demo](./demo) for an example.
 
 Later in your app create a service in `src/services/pages.js`
 

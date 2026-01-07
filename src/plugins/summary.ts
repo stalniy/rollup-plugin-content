@@ -1,20 +1,10 @@
-import { PluginContext } from 'rollup';
 import {
-  Summarizer,
-  Summaries,
   ItemSummarizer,
+  Summarizer
 } from '../Summarizer';
 import { ContentPlugin } from '../contentPlugins';
-import { serializeRefs, generateAssetUrl } from '../utils';
 import { SummarizerOptions } from '../types';
-
-function serializeSummary(rollup: PluginContext, name: string, summaries: Summaries<any>) {
-  return serializeRefs(summaries, (details, lang) => generateAssetUrl(rollup.emitFile({
-    type: 'asset',
-    name: `${name}.${lang}.json`,
-    source: JSON.stringify(details),
-  })));
-}
+import { serializeRefs } from '../utils';
 
 type SummarizerFactory<T extends object> = () => Summarizer<T>;
 
@@ -31,10 +21,14 @@ export function summary<Item extends object>(
       summarizer = summarizer || createSummarizer();
       summarizer.add(page, parsingContext);
     },
-    generate(rollup, { path }) {
+    generate(_, { path, emitFile, serializeContent }) {
       const exportName = summarizer!.exportAs || 'summaries';
       const name = path.slice(path.indexOf('/src/') + 5).replace(/\W+/g, '_');
-      const content = serializeSummary(rollup, `${name}_${exportName}`, summarizer!.toJSON());
+      const content = serializeRefs(summarizer!.toJSON(), (details, lang) => serializeContent(emitFile({
+        type: 'asset',
+        name: `${name}_${exportName}.${lang}.json`,
+        source: JSON.stringify(details),
+      })))
       summarizer = null;
 
       return `export var ${exportName} = ${content};`;

@@ -1,5 +1,5 @@
 import slugify from '@sindresorhus/slugify';
-import { get, orderBy } from 'lodash';
+import { get, orderBy } from 'lodash-es';
 import { ArticleSummary } from './schema';
 import { ParsingContext, SummarizerOptions } from './types';
 import { pick } from './utils';

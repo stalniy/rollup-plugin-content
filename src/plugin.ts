@@ -1,13 +1,15 @@
-import { Plugin } from 'rollup';
+import type { Plugin, PluginContext } from 'rollup';
 import { createFilter } from '@rollup/pluginutils';
 import { extname, dirname, resolve as resolvePath } from 'path';
 import localFs from './fs';
-import { ParsingContext, SummarizerOptions } from './types';
+import type { ParsingContext, SummarizerOptions } from './types';
 import validator from './validator';
-import { ContentPlugin, runPluginsHook } from './contentPlugins';
+import { type ContentPlugin, runPluginsHook } from './contentPlugins';
 import {
   serializeRefs, returnTrue, fileNameId, pick,
+  generateAssetUrl,
 } from './utils';
+import type { ViteDevServer } from 'vite';
 
 let pluginId = 1;
 
@@ -30,22 +32,40 @@ interface ContentOptions<Lang extends string, Item extends {}> {
 
 export default <L extends string = 'en', Item extends { id: any } = any>(
   options: ContentOptions<L, Item> = {},
-): Plugin => {
+): VitePlugin => {
   const entryRegex = options.entry || /\.summary$/;
-  const KEY = `CONTENT_${pluginId++}:`;
+  const KEY = `\0CONTENT_${pluginId++}:`;
   const availableLangs = options.langs || ['en'];
   const generatePageId = options.main?.resolve?.id || fileNameId;
   const parse = options.parse || ((content) => JSON.parse(content));
   const fs = options.fs || localFs;
   const validatePage = validator(options.pageSchema);
   const canProcessFile = options.files ? createFilter(options.files) : returnTrue;
+  let devServer: ViteDevServer;
+  const devServerContent = new Map<string, string>();
 
   return {
     name: 'content',
+    configureServer(server) {
+      devServer = server;
+      server.middlewares.use((req: any, res: any, next: any) => {
+        if (req.url?.startsWith('/@content-json/')) {
+          const cacheKey = req.url.slice('/@content-json/'.length);
+          const data = devServerContent.get(cacheKey);
+
+          if (data) {
+            res.setHeader('Content-Type', 'application/json');
+            res.end(data);
+            return;
+          }
+        }
+        next();
+      });
+    },
     resolveId(id, importee) {
-      if (entryRegex.test(id)) {
+      if (entryRegex.test(id) && importee) {
         const ext = extname(id);
-        return KEY + resolvePath(dirname(importee!), id.slice(0, -ext.length));
+        return KEY + Buffer.from(resolvePath(dirname(importee!), id.slice(0, -ext.length))).toString('base64');
       }
     },
     resolveFileUrl({ fileName }) {
@@ -56,10 +76,36 @@ export default <L extends string = 'en', Item extends { id: any } = any>(
         return;
       }
 
-      const path = id.slice(KEY.length);
+      const path = Buffer.from(id.slice(KEY.length), 'base64').toString('utf8');
       const urls: URLIndex = {};
+      const context = this;
 
-      this.addWatchFile(path);
+      if (devServer) {
+        devServer.watcher.add(path);
+        const invalidateModule = (file: string) => {
+          if (!file.startsWith(path)) return;
+          const mod = devServer.moduleGraph.getModuleById(id);
+          if (!mod) return;
+          devServer.moduleGraph.invalidateModule(mod);
+          devServer.ws.send({ type: "full-reload" });
+        };
+        devServer.watcher.on('add', invalidateModule);
+        devServer.watcher.on('unlink', invalidateModule);
+      } else {
+        context.addWatchFile(path);
+      }
+
+      const emitFile: PluginContext['emitFile'] = (options) => {
+        if (devServer && options.type === 'asset') {
+          devServerContent.set(options.name!, options.source?.toString() || '');
+          return `'/@content-json/${options.name}'`;
+        }
+        return context.emitFile(options);
+      };
+      const serializeContent = devServer
+        ? (id: string) => id
+        : generateAssetUrl;
+
       await fs.walkPath(path, async (file) => {
         if (!canProcessFile(file.path)) {
           return;
@@ -74,11 +120,16 @@ export default <L extends string = 'en', Item extends { id: any } = any>(
           throw new Error(`Invalid lang suffix "${lang}" in ${relativePath}. Possible value: ${availableLangs.join(', ')}`);
         }
 
-        this.addWatchFile(file.path);
+        // if (!isDevServer) {
+          context.addWatchFile(file.path);
+        // }
 
         const source = await fs.readFile(file.path, { encoding: 'utf8' });
         const parsingContext = {
-          relativePath, lang, file, ext,
+          relativePath,
+          lang,
+          file,
+          ext,
         };
 
         await runPluginsHook(options.plugins, 'beforeParse', source, parsingContext);
@@ -96,18 +147,22 @@ export default <L extends string = 'en', Item extends { id: any } = any>(
 
         const partialPage = options.main?.fields ? pick(page, options.main, parsingContext) : page;
         urls[lang] = urls[lang] || {};
-        urls[lang][page.id] = this.emitFile({
+        urls[lang][page.id] = emitFile({
           type: 'asset',
-          name: 'a.json',
+          name: `${page.id}.${lang}.json`,
           source: JSON.stringify(partialPage),
         });
       });
 
-      const pagesContent = serializeRefs(urls, (langUrls) => serializeRefs(langUrls));
+      const pagesContent = serializeRefs(urls, (langUrls) => serializeRefs(langUrls, serializeContent));
       const content = `export var pages = ${pagesContent};\n`;
-      const pluginsContent = await runPluginsHook(options.plugins, 'generate', this, { path });
+      const pluginsContent = await runPluginsHook(options.plugins, 'generate', context, { path, emitFile, serializeContent });
 
       return content + pluginsContent.filter(Boolean).join(';\n');
-    },
+    }
   };
 };
+
+type VitePlugin = Plugin & {
+  configureServer?(server: ViteDevServer): void
+}

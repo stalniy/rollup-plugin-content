@@ -8,7 +8,9 @@ export interface ContentPlugin<L extends string = string> {
 }
 
 export interface GenerateContext {
-  path: string
+  path: string;
+  emitFile: PluginContext['emitFile'];
+  serializeContent: (id: string) => string;
 }
 
 export function runPluginsHook(

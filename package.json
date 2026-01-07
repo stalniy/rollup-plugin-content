@@ -7,9 +7,8 @@
   "typings": "dist/types/index.d.ts",
   "keywords": [
     "rollup-plugin",
-    "rollup",
-    "modern bundle",
-    "legacy bundle"
+    "vite-plugin",
+    "rollup"
   ],
   "scripts": {
     "prebuild": "rm -rf dist/types/* && tsc",
@@ -28,29 +27,30 @@
     "*.d.ts"
   ],
   "peerDependencies": {
-    "rollup": "^1.20.0 || ^2.0.0",
-    "@rollup/pluginutils": "^3.0.0"
+    "@rollup/pluginutils": "^3.0.0 || ^4.0.0 || ^5.0.0",
+    "rollup": "^1.20.0 || ^2.0.0 || ^3.0.0 || ^4.0.0",
+    "vite": "^4.0.0 || ^5.0.0 || ^6.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vite": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@babel/core": "^7.8.7",
-    "@babel/plugin-proposal-optional-chaining": "^7.11.0",
     "@babel/preset-env": "^7.11.5",
     "@babel/preset-typescript": "^7.8.3",
     "@rollup/plugin-commonjs": "^11.0.2",
     "@rollup/plugin-node-resolve": "^7.1.1",
-    "@types/lodash": "^4.14.149",
-    "@types/node": "^13.9.0",
-    "@typescript-eslint/eslint-plugin": "^2.22.0",
-    "eslint": "^6.8.0",
-    "eslint-config-airbnb-base": "^14.0.0",
-    "eslint-config-airbnb-typescript": "^7.0.0",
-    "eslint-plugin-import": "^2.20.1",
+    "@types/lodash-es": "^4.17.0",
+    "@types/node": "^24.0.0",
     "husky": "^4.2.3",
     "json-schema-to-typescript": "^8.1.0",
     "lint-staged": "^10.0.8",
     "rollup": "^1.31.1",
     "rollup-plugin-babel": "^4.4.0",
-    "typescript": "^3.8.3"
+    "typescript": "^3.8.3",
+    "vite": "^5.0.0"
   },
   "husky": {
     "hooks": {
@@ -63,8 +63,8 @@
     ]
   },
   "dependencies": {
-    "@sindresorhus/slugify": "^0.11.0",
-    "ajv": "^6.12.0",
-    "lodash": "^4.17.15"
+    "@sindresorhus/slugify": "^3.0.0",
+    "ajv": "^8.17.1",
+    "lodash-es": "^4.17.22"
   }
 }

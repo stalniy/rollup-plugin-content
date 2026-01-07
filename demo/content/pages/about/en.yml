@@ -1,0 +1,10 @@
+title: About This Blog
+author: Demo Author
+createdAt: 2024-03-15T10:00:00.000Z
+meta:
+  keywords: [software, development, blog, about]
+  description: Learn more about this blog and its purpose
+content: |
+  Welcome to our blog! This is a demo of the rollup-plugin-content
+  working with Vite. We create static content that can be loaded
+  dynamically in your single-page application.asdasdasd

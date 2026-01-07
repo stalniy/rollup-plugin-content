@@ -1,0 +1,15 @@
+title: Getting Started Guide
+author: Demo Author
+createdAt: 2024-03-20T14:30:00.000Z
+meta:
+  keywords: [tutorial, guide, setup, installation]
+  description: A quick guide to get you started with the content plugin
+content: |
+  Getting started with rollup-plugin-content is easy!
+
+  1. Install the package: npm install rollup-plugin-content
+  2. Configure your rollup or vite config
+  3. Create your content files in YAML or JSON format
+  4. Import the generated summary in your application
+
+  That's it! Your content is now available as static JSON files.
