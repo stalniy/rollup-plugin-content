@@ -20,7 +20,8 @@
   "scripts": {
     "build": "tsup src/index.ts --format cjs,esm --dts --clean --sourcemap",
     "lint": "eslint --ext .ts src",
-    "release": "NODE_ENV=production npm run build && npm publish",
+    "release": "npm test && npm publish",
+    "test": "NODE_ENV=production npm run build",
     "prepare": "husky"
   },
   "author": "Sergii Stotskyi <sergiy.stotskiy@freaksidea.com>",
