@@ -1,4 +1,4 @@
-import type { Plugin, PluginContext } from 'rollup';
+import type { Plugin as RollupPlugin, PluginContext } from 'rollup';
 import { createFilter } from '@rollup/pluginutils';
 import { extname, dirname, resolve as resolvePath } from 'path';
 import localFs from './fs';
@@ -12,11 +12,7 @@ import {
 
 let pluginId = 1;
 
-type URLIndex = {
-  [lang: string]: {
-    [id: string]: string
-  }
-};
+type URLIndex = Record<string, Record<string, string>>;
 
 interface ContentOptions<Lang extends string, Item extends {}> {
   entry?: RegExp
@@ -77,7 +73,7 @@ export default <L extends string = 'en', Item extends { id: any } = any>(
 
       const path = Buffer.from(id.slice(KEY.length), 'base64').toString('utf8');
       const urls: URLIndex = {};
-      const context = this;
+      const context = this; // eslint-disable-line @typescript-eslint/no-this-alias
 
       if (devServer) {
         devServer.watcher.add(path);
@@ -153,7 +149,10 @@ export default <L extends string = 'en', Item extends { id: any } = any>(
         });
       });
 
-      const pagesContent = serializeRefs(urls, (langUrls) => serializeRefs(langUrls, serializeContent));
+      const pagesContent = serializeRefs(
+        urls,
+        (langUrls) => serializeRefs(langUrls, serializeContent)
+      );
       const content = `export var pages = ${pagesContent};\n`;
       const pluginsContent = await runPluginsHook(options.plugins, 'generate', context, { path, emitFile, serializeContent });
 
@@ -162,6 +161,6 @@ export default <L extends string = 'en', Item extends { id: any } = any>(
   };
 };
 
-type VitePlugin = Plugin & {
+type VitePlugin = RollupPlugin & {
   configureServer?(server: import('vite').ViteDevServer): void
 }

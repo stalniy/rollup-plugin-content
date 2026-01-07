@@ -8,7 +8,7 @@ export type ParsingContext<L extends string> = {
 };
 
 export type SummarizerOptions<T extends object> = {
-  fields: Array<keyof T>,
+  fields: (keyof T)[],
   resolve: {
     [K in keyof T]?: (
       value: T,
@@ -18,5 +18,5 @@ export type SummarizerOptions<T extends object> = {
     ) => T[K]
   },
   sortBy: string[],
-  indexBy: Array<keyof T>,
+  indexBy: (keyof T)[],
 };

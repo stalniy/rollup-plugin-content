@@ -24,11 +24,14 @@ export function summary<Item extends object>(
     generate(_, { path, emitFile, serializeContent }) {
       const exportName = summarizer!.exportAs || 'summaries';
       const name = path.slice(path.indexOf('/src/') + 5).replace(/\W+/g, '_');
-      const content = serializeRefs(summarizer!.toJSON(), (details, lang) => serializeContent(emitFile({
-        type: 'asset',
-        name: `${name}_${exportName}.${lang}.json`,
-        source: JSON.stringify(details),
-      })))
+      const content = serializeRefs(
+        summarizer!.toJSON(),
+        (details, lang) => serializeContent(emitFile({
+          type: 'asset',
+          name: `${name}_${exportName}.${lang}.json`,
+          source: JSON.stringify(details),
+        }))
+      );
       summarizer = null;
 
       return `export var ${exportName} = ${content};`;

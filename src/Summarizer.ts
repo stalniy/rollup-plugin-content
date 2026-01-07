@@ -9,7 +9,7 @@ type Primitive = boolean | string | number | null | undefined;
 function updateIndex(
   summary: Record<string, any>,
   indexName: string,
-  values: Primitive | Array<Primitive>,
+  values: Primitive | Primitive[],
   position: number,
 ) {
   const index: IndexByPosition = summary[indexName] || {};
@@ -22,14 +22,14 @@ function updateIndex(
   });
 
   if (!(indexName in summary)) {
-    // eslint-disable-next-line no-param-reassign
+     
     summary[indexName] = index;
   }
 }
 
 type SortingOptions = {
   fields: string[],
-  order: Array<'asc' | 'desc'>,
+  order: ('asc' | 'desc')[],
   missingFields: string[]
 };
 
@@ -60,11 +60,9 @@ function getSortingOptions(options: any) {
   return sort;
 }
 
-type IndexByPosition = { [key: string]: number[] };
-export type Summary<T extends object> = { items?: T[] } & { [indexName: string]: IndexByPosition };
-export type Summaries<T extends object> = {
-  [lang: string]: Summary<T>
-};
+type IndexByPosition = Record<string, number[]>;
+export type Summary<T extends object> = { items?: T[] } & Record<string, IndexByPosition>;
+export type Summaries<T extends object> = Record<string, Summary<T>>;
 export type Article = ArticleSummary & {
   meta?: {
     keywords?: string[],
@@ -165,7 +163,7 @@ export class ItemSummarizer<T extends BaseItem> {
 
       if (this.sortingOptions) {
         const { fields, order } = this.sortingOptions;
-        // eslint-disable-next-line no-param-reassign
+         
         summary.items = orderBy(summary.items, fields, order);
       }
 
