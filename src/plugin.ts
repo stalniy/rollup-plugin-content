@@ -9,7 +9,6 @@ import {
   serializeRefs, returnTrue, fileNameId, pick,
   generateAssetUrl,
 } from './utils';
-import type { ViteDevServer } from 'vite';
 
 let pluginId = 1;
 
@@ -41,7 +40,7 @@ export default <L extends string = 'en', Item extends { id: any } = any>(
   const fs = options.fs || localFs;
   const validatePage = validator(options.pageSchema);
   const canProcessFile = options.files ? createFilter(options.files) : returnTrue;
-  let devServer: ViteDevServer;
+  let devServer: import('vite').ViteDevServer;
   const devServerContent = new Map<string, string>();
 
   return {
@@ -164,5 +163,5 @@ export default <L extends string = 'en', Item extends { id: any } = any>(
 };
 
 type VitePlugin = Plugin & {
-  configureServer?(server: ViteDevServer): void
+  configureServer?(server: import('vite').ViteDevServer): void
 }

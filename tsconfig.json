@@ -12,6 +12,7 @@
     "declaration": true,
     "emitDeclarationOnly": true,
     "noErrorTruncation": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true
   }
 }

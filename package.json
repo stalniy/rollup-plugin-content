@@ -2,23 +2,31 @@
   "name": "rollup-plugin-content",
   "version": "0.7.0",
   "description": "Rollup plugin to generate content and its summaries for i18n static sites",
-  "main": "dist/cjs/index.js",
-  "module": "dist/es6/index.js",
-  "typings": "dist/types/index.d.ts",
+  "main": "dist/index.js",
+  "type": "module",
+  "typings": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
   "keywords": [
     "rollup-plugin",
     "vite-plugin",
     "rollup"
   ],
   "scripts": {
-    "build": "rm -rf dist/types/* && tsc && rollup -c",
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean --sourcemap",
     "lint": "eslint --ext .ts src",
-    "release": "NODE_ENV=production npm run build && npm publish"
+    "release": "NODE_ENV=production npm run build && npm publish",
+    "prepare": "husky"
   },
   "author": "Sergii Stotskyi <sergiy.stotskiy@freaksidea.com>",
   "license": "MIT",
   "engines": {
-    "npm": "^6.0.0"
+    "npm": "^11.0.0"
   },
   "files": [
     "dist",
@@ -35,25 +43,13 @@
     }
   },
   "devDependencies": {
-    "@babel/core": "^7.8.7",
-    "@babel/preset-env": "^7.11.5",
-    "@babel/preset-typescript": "^7.8.3",
-    "@rollup/plugin-commonjs": "^11.0.2",
-    "@rollup/plugin-node-resolve": "^7.1.1",
     "@types/lodash-es": "^4.17.0",
     "@types/node": "^24.0.0",
-    "husky": "^4.2.3",
-    "json-schema-to-typescript": "^8.1.0",
-    "lint-staged": "^10.0.8",
-    "rollup": "^1.31.1",
-    "rollup-plugin-babel": "^4.4.0",
-    "typescript": "^3.8.3",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
     "vite": "^5.0.0"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
   },
   "lint-staged": {
     "**/*.{js,ts}": [
