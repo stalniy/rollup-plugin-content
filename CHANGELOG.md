@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.1](https://github.com/stalniy/rollup-plugin-content/compare/v0.8.0...v0.8.1) (2026-08-08)
+
+
+### Bug Fixes
+
+* upgrades vite and fix sec issues ([#20](https://github.com/stalniy/rollup-plugin-content/issues/20)) ([bf8c97f](https://github.com/stalniy/rollup-plugin-content/commit/bf8c97fff6aa976682af3fb3663d8e054ca9fa1e))
+
 ## [0.8.0](https://github.com/stalniy/rollup-plugin-content/compare/v0.7.1...v0.8.0) (2026-01-07)
 
 
