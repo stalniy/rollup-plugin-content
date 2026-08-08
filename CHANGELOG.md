@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.2](https://github.com/stalniy/rollup-plugin-content/compare/v0.8.1...v0.8.2) (2026-08-08)
+
+
+### Bug Fixes
+
+* updates ts toolchain ([#22](https://github.com/stalniy/rollup-plugin-content/issues/22)) ([1dca5bf](https://github.com/stalniy/rollup-plugin-content/commit/1dca5bfcbe792892fcba6e80e753c039ce084762))
+
 ## [0.8.1](https://github.com/stalniy/rollup-plugin-content/compare/v0.8.0...v0.8.1) (2026-08-08)
 
 
