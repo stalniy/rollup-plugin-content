@@ -2,6 +2,10 @@
   "name": "rollup-plugin-content",
   "version": "0.8.2",
   "description": "Rollup plugin to generate content and its summaries for i18n static sites",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stalniy/rollup-plugin-content.git"
+  },
   "main": "dist/index.js",
   "type": "module",
   "typings": "dist/types/index.d.ts",
