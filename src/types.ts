@@ -1,4 +1,4 @@
-import { FileDetails } from './fs';
+import { FileDetails } from './fs.ts';
 
 export type ParsingContext<L extends string> = {
   relativePath: string,

@@ -1,5 +1,5 @@
 import { get, set } from 'lodash-es';
-import { SummarizerOptions, ParsingContext } from './types';
+import { SummarizerOptions, ParsingContext } from './types.ts';
 
 export const generateAssetUrl = (id: string) => `import.meta.ROLLUP_FILE_URL_${id}`;
 

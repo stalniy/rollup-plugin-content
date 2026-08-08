@@ -1,5 +1,5 @@
-import Ajv from 'ajv';
-import { defaultSchema } from './schema';
+import {Ajv} from 'ajv';
+import { defaultSchema } from './schema.ts';
 
 export default function validator(schema: object | undefined | false) {
   if (schema === false) {

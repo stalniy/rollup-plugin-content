@@ -1,10 +1,10 @@
 import {
   ItemSummarizer,
   Summarizer
-} from '../Summarizer';
-import { ContentPlugin } from '../contentPlugins';
-import { SummarizerOptions } from '../types';
-import { serializeRefs } from '../utils';
+} from '../Summarizer.ts';
+import { ContentPlugin } from '../contentPlugins.ts';
+import { SummarizerOptions } from '../types.ts';
+import { serializeRefs } from '../utils.ts';
 
 type SummarizerFactory<T extends object> = () => Summarizer<T>;
 

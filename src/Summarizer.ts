@@ -1,8 +1,8 @@
 import slugify from '@sindresorhus/slugify';
 import { get, orderBy } from 'lodash-es';
-import { ArticleSummary } from './schema';
-import { ParsingContext, SummarizerOptions } from './types';
-import { pick } from './utils';
+import { ArticleSummary } from './schema.ts';
+import { ParsingContext, SummarizerOptions } from './types.ts';
+import { pick } from './utils.ts';
 
 type Primitive = boolean | string | number | null | undefined;
 
@@ -22,7 +22,7 @@ function updateIndex(
   });
 
   if (!(indexName in summary)) {
-     
+
     summary[indexName] = index;
   }
 }
@@ -163,7 +163,7 @@ export class ItemSummarizer<T extends BaseItem> {
 
       if (this.sortingOptions) {
         const { fields, order } = this.sortingOptions;
-         
+
         summary.items = orderBy(summary.items, fields, order);
       }
 
