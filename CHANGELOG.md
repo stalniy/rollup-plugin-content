@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.3](https://github.com/stalniy/rollup-plugin-content/compare/v0.8.2...v0.8.3) (2026-08-08)
+
+
+### Bug Fixes
+
+* adds repository.url to package.json ([#27](https://github.com/stalniy/rollup-plugin-content/issues/27)) ([d68f531](https://github.com/stalniy/rollup-plugin-content/commit/d68f53123bdbbab3b19a29ab0edb5dc93117290b))
+
 ## [0.8.2](https://github.com/stalniy/rollup-plugin-content/compare/v0.8.1...v0.8.2) (2026-08-08)
 
 
