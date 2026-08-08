@@ -1,5 +1,5 @@
 import { PluginContext } from 'rollup';
-import { ParsingContext } from './types';
+import { ParsingContext } from './types.ts';
 
 export interface ContentPlugin<L extends string = string> {
   beforeParse?(source: string, parsingContext: ParsingContext<L>): void

@@ -1,14 +1,14 @@
 import type { Plugin as RollupPlugin, PluginContext } from 'rollup';
 import { createFilter } from '@rollup/pluginutils';
 import { extname, dirname, resolve as resolvePath } from 'path';
-import localFs from './fs';
-import type { ParsingContext, SummarizerOptions } from './types';
-import validator from './validator';
-import { type ContentPlugin, runPluginsHook } from './contentPlugins';
+import localFs from './fs.ts';
+import type { ParsingContext, SummarizerOptions } from './types.ts';
+import validator from './validator.ts';
+import { type ContentPlugin, runPluginsHook } from './contentPlugins.ts';
 import {
   serializeRefs, returnTrue, fileNameId, pick,
   generateAssetUrl,
-} from './utils';
+} from './utils.ts';
 
 let pluginId = 1;
 

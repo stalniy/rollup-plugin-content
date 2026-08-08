@@ -1,4 +1,4 @@
-export { default as content } from './plugin';
-export * from './Summarizer';
-export * from './schema';
-export * from './plugins/summary';
+export { default as content } from './plugin.ts';
+export * from './Summarizer.ts';
+export * from './schema.ts';
+export * from './plugins/summary.ts';
